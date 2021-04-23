@@ -20,5 +20,5 @@ Para eliminar un entorno virtual
 `conda env remover -n ambiente`
 
 muestra todos los paquetes en este entorno: 
-`conda list
+`conda list`
 
