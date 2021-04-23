@@ -19,5 +19,6 @@ Para desactivar el entorno virtual actual y cambiar al entorno por default de an
 Para eliminar un entorno virtual
 `conda env remover -n ambiente`
 
-
+muestra todos los paquetes en este entorno: 
+`conda list
 
