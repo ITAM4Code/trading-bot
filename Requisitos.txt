@@ -5,5 +5,5 @@ python-sql
 mysqlclient
 mysql-connector-python
 pymysql
-pip install SQLAlchemy
-pip install jsons
+SQLAlchemy
+jsons
