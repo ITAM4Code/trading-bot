@@ -10,11 +10,14 @@ Crear un conda environment:
 
 `pip install -r Requisitos.txt`
 
-
-conda desactivaste 
-Para ver tus Virtual environments:
+Para ver tus entornos virtuales:
 `conda env list`
-Para eliminar un Virtual environment
+
+Para desactivar el entorno virtual actual y cambiar al entorno por default de anaconda: 
+`conda deactivate`
+
+Para eliminar un entorno virtual
 `conda env remover -n ambiente`
+
 
 
