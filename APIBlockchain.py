@@ -62,9 +62,28 @@ def join_dataframes(url_list):
     return df_empty
         
 df_final = join_dataframes(url_list_short)      
+ 
+#Pendiente pasar a SQL por los nan      
         
-        
-        
+engine = sql.create_engine(f"mysql://root:{token_mysql}@localhost:3306/Blockchain_API")
+    #'mysql+mysqlconnector://user:password@localhost/db?auth_plugin=mysql_native_password'
+    
+    
+
+    #Debemos de hacer en modo de query porque SQL no entiende como tal el dataframe
+    #La vamos a decir a SQL que va a insertar en "trades" los valores de las columnas
+    initial_q = """INSERT INTO datos_blockchain
+    (book,created_at,amount,maker_side,price,tid)
+    VALUES
+    """
+    #Formamos los 6 espacios de las columnas y las pegamos con format y el nombre de las columnas agregadas
+    values_q = ",".join(["""('{}','{}','{}','{}','{}','{}')""".format(
+                         row.book,
+                         row.created_at,
+                         row.amount,
+                         row.maker_side,
+                         row.price,
+                         row.tid) for idx, row in df.iterrows()])
         
         
         
