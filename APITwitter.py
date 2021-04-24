@@ -5,7 +5,7 @@ Created on Thu Apr 15 21:09:02 2021
 
 @author: rebe y fernando
 """
-
+ 
 from pandas import DataFrame #Para DB
 import sqlalchemy as sql #Para acceder a MySQL
 from tweepy import OAuthHandler, Stream, StreamListener
@@ -72,67 +72,52 @@ class StdOutListener(StreamListener):
         
         engine = sql.create_engine(f"mysql://root:{token_mysql}@localhost:3306/Twitter_API")
         
+        try:
+            list_data = extract_tweet_data(data)
+            
+            #test_list = []
+            #test_list_origin.append(data)
+            #test_list.append(list_data)
+            
+            #df = DataFrame(test_list,columns = ['id_str','language','timestamp','text','user','user_followers','user_friends','user_statuses','user_creation'])
+            
+            print('Usuario: {}, Mensaje: {}'.format(list_data[4],list_data[3]))
         
-        list_data = extract_tweet_data(data)
         
-        #test_list = []
-        #test_list_origin.append(data)
-        #test_list.append(list_data)
-        
-        #df = DataFrame(test_list,columns = ['id_str','language','timestamp','text','user','user_followers','user_friends','user_statuses','user_creation'])
-        
-        print('Usuario: {}, Mensaje: {}'.format(list_data[4],list_data[3]))
-        
-        
-        #FUNCION PARA INSERTAR LOS DATOS EN BASE SQL
-        initial_q = """INSERT INTO data_usuarios(id_str,language,timestamp,text,user,user_followers,user_friends,user_statuses,user_creation) 
-         VALUES("{0}","{1}","{2}","{3}","{4}",{5},{6},{7},"{8}")""".format(
-                         #id
-                         list_data[0],
-                         #row.language
-                         list_data[1],
-                         #row.timestamp
-                         list_data[2],
-                         #row.text
-                         list_data[3].replace('"',"$").strip(),
-                         #row.user
-                         list_data[4],                         
-                         #row.user_followers
-                         float(list_data[5]),
-                         #row.user_friends
-                         float(list_data[6]),
-                         #row.user_statuses
-                         float(list_data[7]),                         
-                         #row.user_creation
-                         list_data[8]) 
+            #FUNCION PARA INSERTAR LOS DATOS EN BASE SQL
+            initial_q = """INSERT INTO data_usuarios(id_str,language,timestamp,text,user,user_followers,user_friends,user_statuses,user_creation) 
+             VALUES("{0}","{1}","{2}","{3}","{4}",{5},{6},{7},"{8}")""".format(
+                             #id
+                             list_data[0],
+                             #row.language
+                             list_data[1],
+                             #row.timestamp
+                             list_data[2],
+                             #row.text
+                             list_data[3].replace('"',"$").strip(),
+                             #row.user
+                             list_data[4],                         
+                             #row.user_followers
+                             int(list_data[5]),
+                             #row.user_friends
+                             int(list_data[6]),
+                             #row.user_statuses
+                             int(list_data[7]),                         
+                             #row.user_creation
+                             list_data[8]) 
          
-       # values_q =  """("{}","{}","{}","{}","{}",{},{},{},"{}")""".format(
-                         #id
-        #                 list_data[0],
-                         #row.language
-         #                list_data[1],
-                         #row.timestamp
-          #               list_data[2],
-                         #row.text
-           #              list_data[3].strip(),
-                         #row.user
-            #             list_data[4],                         
-                         #row.user_followers
-             #            list_data[5],
-                         #row.user_friends
-              #           list_data[6],
-                         #row.user_statuses
-               #          list_data[7],                         
-                         #row.user_creation
-                #         list_data[8]) 
         
-        query = initial_q 
-        
-        engine.execute(query)
+            query = initial_q 
+            
+            engine.execute(query)
+        except:
+            print("no se pudo extraer el query")
+            
         
         #test_list_origin.append(data)
         #test_list.append(list_data)
         return True
+
 
     def on_error(self, status):
         print(status)
@@ -140,13 +125,12 @@ class StdOutListener(StreamListener):
 if __name__ == '__main__':
     
     #LISTA PARA VER COMO ESTRUCTURAMOS LOS DATOS
-    test_list_origin = []
-    test_list = []
+    #test_list_origin = []
+    #test_list = []
     listener_ = StdOutListener()
    
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-
     stream = Stream(auth, listener_)
     stream.filter(track=['btc'])
     
