@@ -1,0 +1,11 @@
+CREATE TABLE `Twitter_API`.`data_usuarios` (
+  `id_str` VARCHAR(20) NOT NULL,
+  `language` VARCHAR(5) NULL,
+  `timestamp` VARCHAR(20) NULL,
+  `text` VARCHAR(300) NULL,
+  `user` VARCHAR(45) NULL,
+  `user_followers` INT NULL,
+  `user_friends` INT NULL,
+  `user_statuses` INT NULL,
+  `user_creation` VARCHAR(45) NULL,
+  PRIMARY KEY (`id_str`));
