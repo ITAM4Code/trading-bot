@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr  2 19:46:18 2021
-
-@author: fernando
+@author: Jordán
 """
-
-
+# We define the libraries
 import time
 import hmac
 import hashlib
@@ -15,115 +12,93 @@ import json
 import os
 from dotenv import load_dotenv
 
-
 #Load TOKEN
 load_dotenv()
-token_bitso=os.getenv('TOKEN_BITSO')
-token_bitso_key=os.getenv('BITSO_KEY')
+bitso_secret=os.getenv('TOKEN_BITSO') #API key
+bitso_key=os.getenv('BITSO_KEY')      #Clave API
 
-#Vamos acceder a la API Privada
-
-bitso_key = token_bitso_key#Clave API
-bitso_secret = token_bitso  #API key
-http_method = "GET" # Change to POST si queremos mandar una ORDEN por ejemplo
-#El get es para pedir cosas y el POST para enviar.
-request_path = "/v3/balance/"
-parameters = {}     # Needed for POST endpoints requiring data
-
-# Create signature
-nonce =  str(int(round(time.time() * 1000)))
-message = nonce+http_method+request_path
-if (http_method == "POST"):
-  message += json.dumps(parameters)
-signature = hmac.new(bitso_secret.encode('utf-8'),
-                                            message.encode('utf-8'),
-                                            hashlib.sha256).hexdigest()
-
-# Build the auth header
-auth_header = 'Bitso %s:%s:%s' % (bitso_key, nonce, signature)
-
-# Send request
-if (http_method == "GET"):
-  response = requests.get("https://api.bitso.com" + request_path, headers={"Authorization": auth_header})
-elif (http_method == "POST"):
-  response = requests.post("https://api.bitso.com" + request_path, json = parameters, headers={"Authorization": auth_header})
-
-print (response.content)
-
-#------------------------//---------------------------
-#------------------------//---------------------------
-#------------------------//---------------------------
+class bitso_call:
+    """The bitso_call class interacts with the bitso api directly. Within you
+    will find methods to get the balance of your aacount, place an order, or
+    even cancel an order."""
 
 
-#Ya que entramos a la API vamos a aprender ha poner una ORDEN en Bitso
+    def __init__(self, bitso_key, bitso_secret):
+        """Initialize main attributes of the class."""
+        self.bitso_key = bitso_key
+        self.bitso_secret = bitso_secret
 
-http_method = "POST" # Change to POST si queremos mandar una ORDEN por ejemplo
-#El get es para pedir cosas y el POST para enviar.
-#Vamos a mandar una ORDEN
-request_path = "/v3/orders/"
-#Ponemos los palametros, (podemos ver la documentacion https://bitso.com/api_info#place-an-order)
-#book es la moneda, side es si vendes o compras, type es el tipo de la operacion,
-#major es la moneda principal y price el precio al que la quieres comprar o vender
-parameters = {'book':'btc_mxn','side':'sell','type':'limit','major':'0.0007','price':'1300000'}     # Needed for POST endpoints requiring data
+    def create_signature(self, http_method, request_path, parameters={}):
+        """Function which automatically creates a signature and then pass it
+        to create an auth header. It is mandatory for our API calls."""
 
-# Create signature
-nonce =  str(int(round(time.time() * 1000)))
-message = nonce+http_method+request_path
-if (http_method == "POST"):
-  message += json.dumps(parameters)
-signature = hmac.new(bitso_secret.encode('utf-8'),
-                                            message.encode('utf-8'),
-                                            hashlib.sha256).hexdigest()
+    # Create signature
+        nonce =  str(int(round(time.time() * 1000))) # cadena en milisegundos
+        message = nonce+http_method+request_path
+        if (http_method == "POST"):
+            message += json.dumps(parameters)
+        signature = hmac.new(self.bitso_secret.encode('utf-8'),
+                             message.encode('utf-8'),
+                             hashlib.sha256).hexdigest()
 
-# Build the auth header
-auth_header = 'Bitso %s:%s:%s' % (bitso_key, nonce, signature)
+        # Build the auth header
+        auth_header = 'Bitso %s:%s:%s' % (self.bitso_key, nonce, signature)
 
-# Send request
-if (http_method == "GET"):
-  response = requests.get("https://api.bitso.com" + request_path, headers={"Authorization": auth_header})
-elif (http_method == "POST"):
-  response = requests.post("https://api.bitso.com" + request_path, json = parameters, headers={"Authorization": auth_header})
+        # Send request
+        if (http_method == "GET"):
+            response = requests.get("https://api.bitso.com" + request_path,
+                                    headers={"Authorization": auth_header})
+        elif (http_method == "POST"):
+            response = requests.post("https://api.bitso.com" + request_path,
+                                     json = parameters, headers={"Authorization": auth_header})
+        elif (http_method == "DELETE"):
+            response = requests.delete("https://api.bitso.com" + request_path,
+                                       headers={"Authorization": auth_header})
+        return response
 
-print (response.content)
+    def get_balance(self):
+        """Given certain parameters, the function returns an object with the balance
+        of our account."""
 
+        http_method = "GET"
+        request_path = "/v3/balance/"
+        balance = self.create_signature(http_method, request_path)
 
-#-------Para borrar la orden--tenemos que---------------//---------------------------
-#-----------quitar el codigo de arriba que crea una orden-------------//---------------------------
-#------------------------//---------------------------
+        print(balance.content)
 
-#Ahora vamos a CANCELAR UNA ORDEN. 
-#Para cancelar una orden necesitamos el oid del ALTA de la ORDEN
-#En este caso cancelaremos el de la orden anterior {"oid":"SgX8Yos1Q4kn4zTW"}
+    def place_order(self, book, side, _type, major, price):
+        """Given certain parameters, the function returns a json object representing the order."""
 
+        http_method = "POST"
+        request_path = "/v3/orders/"
+        parameters = {'book': book,
+                      'side': side,
+                      'type': _type,
+                      'major': major,
+                      'price': price}
 
-http_method = "DELETE" # Change to DELETE si queremos eliminar una ORDEN 
-#Aqui ponemos el oid
-request_path = "/v3/orders/lQ39F09gKDUboD6E"
-#Ponemos los palametros, (podemos ver la documentacion https://bitso.com/api_info#place-an-order)
-#book es la moneda, side es si vendes o compras, type es el tipo de la operacion,
-#major es la moneda principal y price el precio al que la quieres comprar o vender
-parameters = {}     # Needed for POST endpoints requiring data
+        order = self.create_signature(http_method, request_path, parameters).json()
 
-# Create signature
-nonce =  str(int(round(time.time() * 1000)))
-message = nonce+http_method+request_path
-if (http_method == "POST"):
-  message += json.dumps(parameters)
-signature = hmac.new(bitso_secret.encode('utf-8'),
-                                            message.encode('utf-8'),
-                                            hashlib.sha256).hexdigest()
+        # Access to the json object
+        order_status = order["success"]
+        oid = order["payload"]["oid"]
 
-# Build the auth header
-auth_header = 'Bitso %s:%s:%s' % (bitso_key, nonce, signature)
+        return (order_status, oid)
 
-# Send request
-if (http_method == "GET"):
-    response = requests.get("https://api.bitso.com" + request_path, headers={"Authorization": auth_header})
-elif (http_method == "POST"):
-    response = requests.post("https://api.bitso.com" + request_path, json = parameters, headers={"Authorization": auth_header})
-#Aqui agregamos un DELETE
-elif (http_method == "DELETE"):
-    response = requests.delete("https://api.bitso.com" + request_path, headers={"Authorization": auth_header})
+        # Under development
 
-print (response.content)
+    def cancel_order(self, oid):
+        """The function returns a json object which contains a list of the
+        cancelation Order IDs."""
 
+        http_method = "DELETE" # Change to POST if endpoint requires data
+        request_path = "/v3/orders/" + oid + "/"
+        order_status = self.create_signature(http_method, request_path).json()
+
+        print("Order status: " + str(order_status["success"]))
+
+        # Under development
+
+# Test of the class
+api_object = bitso_call(bitso_key, bitso_secret)  # We make an instance of the bitso call class
+print(api_object.get_balance())
