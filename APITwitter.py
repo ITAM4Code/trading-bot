@@ -5,7 +5,7 @@ Created on Thu Apr 15 21:09:02 2021
 
 @author: rebe y fernando
 """
- 
+
 from pandas import DataFrame #Para DB
 import sqlalchemy as sql #Para acceder a MySQL
 from tweepy import OAuthHandler, Stream, StreamListener
@@ -35,8 +35,7 @@ access_token_secret=os.getenv('ACCESS_TOKEN_SECRET')
 #Esta funcion es para pasar a formato json
 def extract_tweet_data(data):
     raw_json = json.loads(data)
-    
-    
+     
     
     id_str = raw_json['id_str']
     
